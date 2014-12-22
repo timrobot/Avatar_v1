@@ -1,4 +1,6 @@
-Avatar_v1
-=========
+To run the example:
 
-Avatar Ubuntu Desktop
+	$ make
+	$ ./test *png
+
+looks cool, eh?
