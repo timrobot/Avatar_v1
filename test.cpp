@@ -18,6 +18,9 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  // hack: say im starting
+  AvieAudio speaker;
+  speaker.say("I am now starting the program");
 
   // read in images, store on queue
   vector<Mat> images;
