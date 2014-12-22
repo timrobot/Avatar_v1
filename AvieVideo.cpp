@@ -24,11 +24,11 @@ enum {
   MWM_FUNC_CLOSE = (1L << 5)
 };
 
-void *update_window(void *av_asvoid);
-
-AvieVideo::AvieVideo(int width, int height, bool border) {
+AvieVideo::AvieVideo(int width, int height, int xpos, int ypos, bool border) {
   w = width;
   h = height;
+  x = xpos;
+  y = ypos;
 
   /* open display */
   display = XOpenDisplay(NULL);
@@ -49,10 +49,9 @@ AvieVideo::AvieVideo(int width, int height, bool border) {
 
   /* create framebuffer */
   framebuffer = (uint32_t **)malloc(sizeof(uint32_t *) * width);
-  for (int i = 0; i < width; i++) {
+  for (int i = 0; i < width; i++)
     framebuffer[i] = (uint32_t *)malloc(sizeof(uint32_t) * height);
-    memset(framebuffer[i], 0, sizeof(uint32_t) * height);
-  }
+    reset();
 
   /* graphics context */
   gc = XCreateGC(display, win, 0, 0);
@@ -116,6 +115,7 @@ bool AvieVideo::flush() {
     }
   }
   XFlush(display);
+  reset();
   return true;
 }
 
@@ -125,4 +125,9 @@ tv_sec: 0,
         tv_nsec: 1000000000 / fps
   };
   nanosleep(&sleeptime, NULL);
+}
+
+void AvieVideo::reset() {
+  for (int i = 0; i < w; i++)
+    memset(framebuffer[i], 0, sizeof(uint32_t) * h);
 }

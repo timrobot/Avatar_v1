@@ -1,11 +1,24 @@
+CC = g++
 CCFLAGS = `pkg-config --cflags opencv`
-INCLUDE = -I/usr/X11R6/include
-LIBS = -L/usr/X11R6/lib -lX11 `pkg-config --libs opencv`
+INCLUDE = -I/usr/X11R6/include \
+				-I/usr/include/festival -I/usr/include/speech_tools
+LIBS = -L/usr/X11R6/lib -lX11 \
+				`pkg-config --libs opencv` \
+				-L/usr/lib/festival -lFestival -lestools -lestbase -leststring
 
-all:
-	g++ -c AvieVideo.cpp $(INCLUDE)
-	g++ -c test.cpp
-	g++ -o test AvieVideo.o test.o $(INCLUDE) $(LIBS)
+OBJECTS = AvieVideo.o AvieAudio.o test.o
+TARGET = test
+
+all: $(OBJECTS) $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) $(CCFLAGS) $^ -o $@ $(INCLUDE) $(LIBS)
+
+AvieVideo.o: AvieVideo.cpp
+	$(CC) $(CCFLAGS) -c $< -o $@ $(INCLUDE)
+
+AvieAudio.o: AvieAudio.cpp
+	$(CC) $(CCFLAGS) -c $< -o $@ $(INCLUDE)
 
 clean:
-	rm -f *o test
+	rm -f $(OBJECTS) $(TARGET)

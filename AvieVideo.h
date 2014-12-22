@@ -35,10 +35,15 @@ class AvieVideo {
     int w;
     int h;
 
-    AvieVideo(int width, int height, bool border = false);
+    AvieVideo(int width,
+              int height,
+              int xpos = 0,
+              int ypos = 0,
+              bool border = false);
     ~AvieVideo();
     bool flush();
     void tick(int fps);
+    void reset();
 
   private:
     bool display_en;
