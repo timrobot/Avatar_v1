@@ -32,9 +32,9 @@ enum {
 #include <SDL/SDL_image.h>
 #endif
 
-AvieWindow::AvieWindow(int width, int height, int xpos, int ypos, bool border) {
-  w = width;
-  h = height;
+AvieWindow::AvieWindow(int w, int h, int xpos, int ypos, bool border) {
+  width = w;
+  height = h;
   x = xpos;
   y = ypos;
 
@@ -81,7 +81,7 @@ AvieWindow::AvieWindow(int width, int height, int xpos, int ypos, bool border) {
   SDL_Init(SDL_INIT_EVERYTHING);
 
   /* create display on the windows env */
-  screen = SDL_SetVideoMode(w, h, 32, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(width, height, 32, SDL_SWSURFACE);
 
   /* set the window to be transparent */
   HWND hwnd;
@@ -113,8 +113,8 @@ AvieWindow::~AvieWindow() {
     SDL_Quit();
 #endif
   }
-  for (int i = 0; i < w; i++)
-    free(framebuffer[w]);
+  for (int i = 0; i < width; i++)
+    free(framebuffer[i]);
   free(framebuffer);
 }
 
@@ -158,10 +158,11 @@ bool AvieWindow::flush() {
 
   /* screen.blit(framebuffer) */
 #ifdef _WIN32
+  SDL_LockSurface(screen);
   uint32_t *pixels = (uint32_t *)screen->pixels;
 #endif
-  for (int i = 0; i < w; i++) {
-    for (int j = 0; j < h; j++) {
+  for (int i = 0; i < width; i++) {
+    for (int j = 0; j < height; j++) {
       int color = framebuffer[i][j];
       if (ALPHA(color) == 0x00)
         continue;
@@ -178,6 +179,7 @@ bool AvieWindow::flush() {
 #ifdef __gnu_linux__
   XFlush(display);
 #elif _WIN32
+  SDL_UnlockSurface(screen);
   SDL_Flip(screen);
 #endif
   reset();
@@ -190,6 +192,6 @@ void AvieWindow::tick(int fps) {
 }
 
 void AvieWindow::reset() {
-  for (int i = 0; i < w; i++)
-    memset(framebuffer[i], 0, sizeof(uint32_t) * h);
+  for (int i = 0; i < width; i++)
+    memset(framebuffer[i], 0, sizeof(uint32_t) * height);
 }

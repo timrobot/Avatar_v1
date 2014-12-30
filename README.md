@@ -6,7 +6,7 @@ First, install dependencies:
 Then, to run the example:
 
 	$ make
-	$ ./test *png
+	$ ./test test_pics/*
 
 Looks cool, eh?
 

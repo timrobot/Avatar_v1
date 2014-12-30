@@ -2,6 +2,7 @@
 #define AvieWindow_h
 
 #include <stdint.h>
+#include "AvieCommon.h"
 
 // Window type depends on platform
 #ifdef __gnu_linux__
@@ -11,39 +12,18 @@
 #include <SDL/SDL.h>
 #endif
 
-// Create colors from rgb or rgba values
-#define RGB(r, g, b) \
-  ((0xFF000000) + \
-   (((r) & 0x000000FF) << 16) + \
-   (((g) & 0x000000FF) << 8) + \
-   (((b) & 0x000000FF)))
-
-#define RGBA(r, g, b, a) \
-  ((((a) & 0x000000FF) << 24) + \
-   (((r) & 0x000000FF) << 16) + \
-   (((g) & 0x000000FF) << 8) + \
-   (((b) & 0x000000FF)))
-
-// Extract rgba values from colors
-#define RED(c)   ((c & 0x00FF0000) >> 16)
-#define GREEN(c) ((c & 0x0000FF00) >> 8)
-#define BLUE(c)  ((c & 0x000000FF) >> 0)
-#define ALPHA(c) ((c & 0xFF000000) >> 24)
-
 class AvieWindow {
   public:
     // framebuffer[x][y] returns a color
     uint32_t **framebuffer;
     int x;
     int y;
-    int w;
-    int h;
+    int width;
+    int height;
 
-    AvieWindow(int width,
-              int height,
-              int xpos = 0,
-              int ypos = 0,
-              bool border = false);
+    AvieWindow(int w, int h,
+        int xpos = 0, int ypos = 0,
+        bool border = false);
     ~AvieWindow();
     bool flush();
     void tick(int fps);
