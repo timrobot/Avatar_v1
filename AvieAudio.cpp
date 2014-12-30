@@ -7,10 +7,16 @@
 AvieAudio::AvieAudio(std::string voice_name) {
   std::vector<std::string> voices;
   std::vector<std::string> names;
+
+  // kal
   voices.push_back("(voice_kal_diphone)");
   names.push_back("kal");
 
-  festival_initialize(1, 210000);
+  // clb (CMU arctic)
+  voices.push_back("(voice_cmu_us_clb_arctic_clunits)");
+  names.push_back("clb");
+
+  festival_initialize(1, 420000);
   int i;
   for (i = 0; i < MIN(voices.size(), names.size()); i++)
     if (names[i] == voice_name)

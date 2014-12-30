@@ -6,7 +6,7 @@ LIBS = -L/usr/X11R6/lib -lX11 \
 				`pkg-config --libs opencv` \
 				-L/usr/lib/festival -lFestival -lestools -lestbase -leststring
 
-OBJECTS = AvieVideo.o AvieAudio.o test.o
+OBJECTS = AvieWindow.o AvieAudio.o test.o
 TARGET = test
 
 all: $(OBJECTS) $(TARGET)
@@ -14,7 +14,7 @@ all: $(OBJECTS) $(TARGET)
 $(TARGET): $(OBJECTS)
 	$(CC) $(CCFLAGS) $^ -o $@ $(INCLUDE) $(LIBS)
 
-AvieVideo.o: AvieVideo.cpp
+AvieWindow.o: AvieWindow.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@ $(INCLUDE)
 
 AvieAudio.o: AvieAudio.cpp

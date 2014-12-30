@@ -2,7 +2,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <vector>
-#include "AvieVideo.h"
+#include "AvieWindow.h"
 #include "AvieAudio.h"
 
 using namespace cv;
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
 
   // create window, get screen from window
-  AvieVideo window(300, 300);
+  AvieWindow window(300, 300);
   uint32_t **screen = window.framebuffer;
 
 
