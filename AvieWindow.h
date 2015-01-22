@@ -4,13 +4,8 @@
 #include <stdint.h>
 #include "AvieCommon.h"
 
-// Window type depends on platform
-#ifdef __gnu_linux__
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#elif _WIN32
-#include <SDL/SDL.h>
-#endif
 
 class AvieWindow {
   public:
@@ -25,20 +20,18 @@ class AvieWindow {
         int xpos = 0, int ypos = 0,
         bool border = false);
     ~AvieWindow();
+    void blit(uint32_t **frame, int width, int height);
     bool flush();
     void tick(int fps);
-    void reset(); // called from within flush
+    void reset();
 
   private:
     bool display_en;
     bool border_en;
-#ifdef __gnu_linux__
     Display *display;
     Window win;
     GC gc;
-#elif _WIN32
-    SDL_Surface *screen;
-#endif
+    uint8_t **blitmask; // for blitting faster?
 };
 
 #endif

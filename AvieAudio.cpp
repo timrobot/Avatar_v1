@@ -26,7 +26,7 @@ AvieAudio::AvieAudio(std::string voice_name) {
   festival_eval_command(voices[i].c_str());
 }
 
-void AvieAudio::say(std::string message) {
+void AvieAudio::say(std::string message) { // should be threaded...oh well
   festival_say_text(message.c_str());
   festival_wait_for_spooler();
 }

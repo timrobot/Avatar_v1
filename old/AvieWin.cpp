@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#ifdef __gnu_linux__
 struct MwmHints {
   unsigned long flags;
   unsigned long functions;
@@ -25,6 +26,11 @@ enum {
   MWM_FUNC_MAXIMIZE = (1L << 4),
   MWM_FUNC_CLOSE = (1L << 5)
 };
+#elif _WIN32
+#include <windows.h>
+#include <SDL/SDL_syswm.h>
+#include <SDL/SDL_image.h>
+#endif
 
 AvieWindow::AvieWindow(int w, int h, int xpos, int ypos, bool border) {
   width = w;
@@ -32,6 +38,7 @@ AvieWindow::AvieWindow(int w, int h, int xpos, int ypos, bool border) {
   x = xpos;
   y = ypos;
 
+#ifdef __gnu_linux__
   /* open display */
   display = XOpenDisplay(NULL);
 
@@ -68,34 +75,47 @@ AvieWindow::AvieWindow(int w, int h, int xpos, int ypos, bool border) {
 
   /* map window */
   XMapWindow(display, win);
+
+#elif _WIN32
+  /* initialize SDL */
+  SDL_Init(SDL_INIT_EVERYTHING);
+
+  /* create display on the windows env */
+  screen = SDL_SetVideoMode(width, height, 32, SDL_SWSURFACE);
+
+  /* set the window to be transparent */
+  HWND hwnd;
+  SDL_SysWMinfo info;
+  SDL_VERSION(&info.version);
+  if (SDL_GetWMInfo(&info))
+    hwnd = info.window;
+  SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+  SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), (255 * 70) / 100, LWA_COLORKEY);
+
+#endif
   display_en = true;
 
   /* create framebuffer */
   framebuffer = (uint32_t **)malloc(sizeof(uint32_t *) * width);
-  blitmask = (uint8_t **)malloc(sizeof(uint8_t *) * width);
-  for (int i = 0; i < width; i++) {
+  for (int i = 0; i < width; i++)
     framebuffer[i] = (uint32_t *)malloc(sizeof(uint32_t) * height);
-    blitmask[i] = (uint8_t *)malloc(sizeof(uint8_t) * height);
-    memset(blitmask[i], 0, sizeof(uint8_t) * height);
-  }
   reset();
 }
 
 AvieWindow::~AvieWindow() {
   if (display_en) {
     display_en = false;
+#ifdef __gnu_linux__
     XDestroyWindow(display, win);
     XCloseDisplay(display);
+#elif _WIN32
+    SDL_FreeSurface(screen);
+    SDL_Quit();
+#endif
   }
   for (int i = 0; i < width; i++)
     free(framebuffer[i]);
   free(framebuffer);
-}
-
-void AvieWindow::blit(uint32_t **frame, int width, int height) {
-  for (int i = 0; i < width; i++)
-    for (int j = 0; j < height; j++)
-      framebuffer[i][j] = frame[i][j];
 }
 
 bool AvieWindow::flush() {
@@ -105,6 +125,7 @@ bool AvieWindow::flush() {
     return false;
   }
   if (border_en) {
+#ifdef __gnu_linux__
     XEvent event;
     XNextEvent(display, &event);
     switch (event.type) {
@@ -119,20 +140,48 @@ bool AvieWindow::flush() {
       default:
         break;
     }
+#elif _WIN32
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      switch (events.type) {
+        case SDL_QUIT:
+          display_en = false;
+          SDL_FreeSurface(screen);
+          SDL_Quit();
+          return false;
+        default:
+          break;
+      }
+    }
+#endif
   }
 
   /* screen.blit(framebuffer) */
+#ifdef _WIN32
+  SDL_LockSurface(screen);
+  uint32_t *pixels = (uint32_t *)screen->pixels;
+#endif
   for (int i = 0; i < width; i++) {
     for (int j = 0; j < height; j++) {
       int color = framebuffer[i][j];
-      if (ALPHA(color) == 0x00 && blitmask[i][j] == 0)
+      if (ALPHA(color) == 0x00)
         continue;
+#ifdef __gnu_linux__
       XSetForeground(display, gc, color);
       XDrawPoint(display, win, gc, i, j);
-      blitmask[i][j] = ALPHA(color) != 0x00;
+#elif _WIN32
+      uint32_t c = SDL_MapRGBA(screen->format,
+          RED(color), GREEN(color), BLUE(color), ALPHA(color));
+      pixels[j * surface->w + i] = c;
+#endif
     }
   }
+#ifdef __gnu_linux__
   XFlush(display);
+#elif _WIN32
+  SDL_UnlockSurface(screen);
+  SDL_Flip(screen);
+#endif
   return true;
 }
 
